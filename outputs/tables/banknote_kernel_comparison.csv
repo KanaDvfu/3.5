@@ -1,0 +1,4 @@
+Kernel,Accuracy
+linear,0.9805825242718447
+rbf,1.0
+poly,0.9878640776699029

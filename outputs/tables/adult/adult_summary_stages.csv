@@ -1,0 +1,4 @@
+stage,rows,cols
+raw_combined,48842,15
+after_dropna,45222,15
+after_one_hot,45222,96
