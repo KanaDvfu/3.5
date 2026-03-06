@@ -219,13 +219,59 @@ save_confusion_matrix(y_test_s, y_pred_rbf, "AdultIncome: SVC RBF (sample 10k)",
 report_rbf = pd.DataFrame(classification_report(y_test_s, y_pred_rbf, output_dict=True)).T.reset_index().rename(columns={"index": "label"})
 save_df(report_rbf, "outputs/tables/adult/adult_rbf_sample10k_classification_report.csv")
 
+# Полный запуск RBF на всем наборе данных
+# Может выполняться долго, поэтому оборачиваем в try/except
+acc_rbf_full = None
+rbf_full_status = "not_run"
+
+try:
+    rbf_full_model = SVC(kernel='rbf', C=1, gamma='scale')
+    rbf_full_model.fit(X_train_scaled, y_train)
+
+    y_pred_rbf_full = rbf_full_model.predict(X_test_scaled)
+    acc_rbf_full = accuracy_score(y_test, y_pred_rbf_full)
+    rbf_full_status = "ok"
+
+    print("RBF SVM Accuracy (full dataset):", acc_rbf_full)
+
+    save_confusion_matrix(
+        y_test,
+        y_pred_rbf_full,
+        "AdultIncome: SVC RBF (full dataset)",
+        "adult_rbf_full_cm.png"
+    )
+
+    report_rbf_full = (
+        pd.DataFrame(classification_report(y_test, y_pred_rbf_full, output_dict=True))
+        .T.reset_index()
+        .rename(columns={"index": "label"})
+    )
+    save_df(report_rbf_full, "outputs/tables/adult/adult_rbf_full_classification_report.csv")
+
+except Exception as e:
+    rbf_full_status = f"failed: {type(e).__name__}: {e}"
+    print("RBF full dataset run failed:", e)
+
 # Comparison table for the report
-comparison = pd.DataFrame([
+comparison_rows = [
     {"model": "LinearSVC_baseline", "dataset": "full", "accuracy": float(acc_linear)},
     {"model": f"LinearSVC_bestC_{grid_linear.best_params_.get('C')}", "dataset": "full", "accuracy": float(acc_best_linear)},
     {"model": "SVC_RBF", "dataset": "sample_10k", "accuracy": float(acc_rbf)},
-])
+]
+
+if acc_rbf_full is not None:
+    comparison_rows.append(
+        {"model": "SVC_RBF", "dataset": "full", "accuracy": float(acc_rbf_full)}
+    )
+
+comparison = pd.DataFrame(comparison_rows)
 
 save_df(comparison, "outputs/tables/adult/adult_model_comparison.csv")
+
+rbf_full_status_df = pd.DataFrame([
+    {"status": rbf_full_status, "accuracy": acc_rbf_full}
+])
+save_df(rbf_full_status_df, "outputs/tables/adult/adult_rbf_full_status.csv")
+
 save_barplot(comparison, "model", "accuracy", "AdultIncome: Accuracy comparison", "adult_accuracy_comparison.png")
 # ————————————————————————————————————————————————————————————————

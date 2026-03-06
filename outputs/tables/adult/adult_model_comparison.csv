@@ -2,3 +2,4 @@ model,dataset,accuracy
 LinearSVC_baseline,full,0.8449915235497899
 LinearSVC_bestC_0.01,full,0.8449915235497899
 SVC_RBF,sample_10k,0.8473333333333334
+SVC_RBF,full,0.8416746517284588
